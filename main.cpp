@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -51,6 +54,7 @@ void add(btn* &head, btn* current, btn* added);
 void print(btn* current, int depth);
 void search(btn* current, int val);
 void delHead(btn* &head, btn* temp);
+void del(btn* &head, btn* current, int val);
 
 bool exists = false;
 int main() {
@@ -63,6 +67,24 @@ int main() {
   
   btn* head = new btn(0);
 
+  // prepare the tree using file
+  ifstream file("nums.txt");
+  if (file.is_open()) {
+    string line;
+    while (getline(file, line)) {
+      stringstream ss(line);
+      string word;
+      while (ss >> word) { // string stream helps with the splitting by spaces
+	int num = stoi(word); // convert the string to int
+	btn* added = new btn(num);
+	add(head, head, added);
+      }
+    }
+    file.close();
+  } else { // files not there
+    cout << "Unable to open file";
+  }
+  
   while (true) {
     char cmd[8];
     cin.getline(cmd, 8);
@@ -98,6 +120,9 @@ int main() {
       if (head->getValue() == num) { // deleting the head. use next larger
 	btn* temp = head->getRight();
         delHead(head, temp);
+      }
+      else { // deleting other than head
+	del(head, head, num);
       }
     }
     else if (strcmp(cmd, "QUIT") == 0) {
@@ -165,8 +190,81 @@ void search(btn* current, int val) {
   }
 }
 
+void del(btn* &head, btn* current, int val) {
+  if (current == nullptr) {
+    return;
+  }
+
+  if (current->getValue() == val) { // found!
+    if (current->getLeft() == nullptr && current->getRight() == nullptr) { // no children
+      
+    }
+    else if (current->getLeft() != nullptr && current->getRight() == nullptr) { // 1 child left
+      btn* temp = current->getLeft();
+      current->value = current->getLeft()->getValue();
+      current->setLeft(current->getLeft()->getRight());
+      current->setRight(current->getLeft()->getLeft());
+      temp3->~btn();
+      return;
+    }
+    else if (current->getLeft() == nullptr && current->getRight() != nullptr) { // 1 child right
+      btn* temp = current->getRight();
+      current->value = current->getRight()->getValue();
+      current->setRight(current->getRight()->getRight());
+      current->setLeft(current->getRight()->getLeft());
+      temp3->~btn();
+      return;
+    }
+    else if (current->getLeft() != nullptr && current->getRight() != nullptr) { // 2 children
+      btn* temp = current->getRight();
+
+      if (current->getRight()->getLeft() == nullptr) { // right doesnt have a left
+	btn* temp3 = current->getRight();
+	current->value = current->getRight()->getValue();
+	current->setRight(current->getRight()->getRight());
+	temp3->~btn();
+	return;
+      }
+      
+      while (temp->getLeft()->getLeft() != nullptr) {
+	temp = temp->getLeft();
+      }
+      
+      // setup the replacer
+      int newVal = temp->getLeft()->getValue();
+
+      
+      // remove it from the tree by replacing its spot with its right
+      btn* temp2 = temp->getLeft()->getRight();
+      temp->getLeft()->~btn();
+      temp->setLeft(temp2);
+
+      current->value = newVal;
+      return;
+    }
+  }
+
+  // go through the children
+  if (current->getValue() < val) { // value is bigger so go right
+    del(head, current->getRight(), val); // recurse right
+  }
+
+  if (current->getValue() > val) { // value is less so go left
+    del(head, current->getLeft(), val); // recurse left
+  }
+}
+
 void delHead(btn* &head, btn* temp) {
   //temp = head->getRight();
+  if (temp->getLeft() == nullptr) { // right doesnt have a l\
+eft
+    btn* temp3 = head->getRight();
+    head->value = head->getRight()->getValue();
+    head->setRight(head->getRight()->getRight());
+    temp3->~btn();
+    return;
+  }
+  
   while (temp->getLeft()->getLeft() != nullptr) {
     temp = temp->getLeft();
   }
