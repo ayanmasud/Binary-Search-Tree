@@ -1,3 +1,8 @@
+/*Binary Search Tree. Add, delete, search, and print to a binary tree
+  Author: Ayan Masud
+  Date: 3/14/25
+ */
+  
 #include <iostream>
 #include <cstring>
 #include <string>
@@ -50,13 +55,14 @@ public:
   }
 };
 
+// prototypes
 void add(btn* &head, btn* current, btn* added);
 void print(btn* current, int depth);
 void search(btn* current, int val);
 void delHead(btn* &head, btn* temp);
 void del(btn* &head, btn* current, int val);
 
-bool exists = false;
+bool exists = false; // bool used over 2 functions to determine if the number is in the tree
 int main() {
   // instructions
   cout << "'ADD' to add a number" << endl;
@@ -65,7 +71,7 @@ int main() {
   cout << "'PRINT' to print the tree" << endl;
   cout << "'QUIT' to leave" << endl;
   
-  btn* head = new btn(0);
+  btn* head = new btn(0); // head of the tree
 
   // prepare the tree using file
   ifstream file("nums.txt");
@@ -96,15 +102,15 @@ int main() {
       btn* added = new btn(num);
       add(head, head, added);
     }
-    else if (strcmp(cmd, "PRINT") == 0) {
+    else if (strcmp(cmd, "PRINT") == 0) { // print command
       print(head, 0);
     }
-    else if (strcmp(cmd, "SEARCH") == 0) {
+    else if (strcmp(cmd, "SEARCH") == 0) { // search command
       int num;
       cout << "which num: ";
       cin >> num;
       search(head, num);
-      if (exists == true) {
+      if (exists == true) { // tells you if it exists or not
 	cout << "exists" << endl;
 	exists = false;
       }
@@ -112,7 +118,7 @@ int main() {
 	cout << "doesn't exist" << endl;
       }
     }
-    else if (strcmp(cmd, "DELETE") == 0) {
+    else if (strcmp(cmd, "DELETE") == 0) { // delete command
       int num;
       cout << "which num: ";
       cin >> num;
@@ -125,7 +131,7 @@ int main() {
 	del(head, head, num);
       }
     }
-    else if (strcmp(cmd, "QUIT") == 0) {
+    else if (strcmp(cmd, "QUIT") == 0) { // quit command
       break;
     }
     cout << endl;
@@ -158,25 +164,25 @@ void add(btn* &head, btn* current, btn* added) {
 }
 
 void print(btn* current, int depth) {
-  if (current == nullptr) {
+  if (current == nullptr) { // stop
     return;
   }
-  print(current->getRight(), depth + 1);
-  for (int i = 0; i < depth; i++) {
+  print(current->getRight(), depth + 1); // sideways tree so print rights
+  for (int i = 0; i < depth; i++) { // add spaces based off the depth
     cout << "  ";
   }
   
   cout << current->getValue() << endl; // print the value
-  print(current->getLeft(), depth + 1);
+  print(current->getLeft(), depth + 1); // then print lefts
 }
 
 //bool exists = false;
 void search(btn* current, int val) {
-  if (current == nullptr) {
+  if (current == nullptr) { // stop
     return;
   }
   
-  if (current->getValue() == val) {
+  if (current->getValue() == val) { // found the value
     exists = true;
   }
 
@@ -190,21 +196,29 @@ void search(btn* current, int val) {
   }
 }
 
-void del(btn* &head, btn* current, int val) {
-  if (current == nullptr) {
+void del(btn* &head, btn* current, int val) { // uses a method similar to the search function
+  if (current == nullptr) { // stop
     return;
   }
 
+  if (current->getLeft()->getValue() == val && current->getLeft()->getLeft() == nullptr && current->getLeft()->getRight() == nullptr) { // left is the one to delete and it has no child
+      current->getLeft()->~btn();
+      current->setLeft(nullptr);
+      return;
+  }
+  if (current->getRight()->getValue() == val && current->getRight()->getLeft() == nullptr && current->getRight()->getRight() == nullptr) { // right is the one to delete and it has no child
+      current->getRight()->~btn();
+      current->setRight(nullptr);
+      return;
+  }
+  
   if (current->getValue() == val) { // found!
-    if (current->getLeft() == nullptr && current->getRight() == nullptr) { // no children
-      
-    }
-    else if (current->getLeft() != nullptr && current->getRight() == nullptr) { // 1 child left
+    if (current->getLeft() != nullptr && current->getRight() == nullptr) { // 1 child left
       btn* temp = current->getLeft();
       current->value = current->getLeft()->getValue();
       current->setLeft(current->getLeft()->getRight());
       current->setRight(current->getLeft()->getLeft());
-      temp3->~btn();
+      temp->~btn();
       return;
     }
     else if (current->getLeft() == nullptr && current->getRight() != nullptr) { // 1 child right
@@ -212,7 +226,7 @@ void del(btn* &head, btn* current, int val) {
       current->value = current->getRight()->getValue();
       current->setRight(current->getRight()->getRight());
       current->setLeft(current->getRight()->getLeft());
-      temp3->~btn();
+      temp->~btn();
       return;
     }
     else if (current->getLeft() != nullptr && current->getRight() != nullptr) { // 2 children
@@ -225,7 +239,8 @@ void del(btn* &head, btn* current, int val) {
 	temp3->~btn();
 	return;
       }
-      
+
+      // similar to the deletion of head
       while (temp->getLeft()->getLeft() != nullptr) {
 	temp = temp->getLeft();
       }
@@ -255,9 +270,7 @@ void del(btn* &head, btn* current, int val) {
 }
 
 void delHead(btn* &head, btn* temp) {
-  //temp = head->getRight();
-  if (temp->getLeft() == nullptr) { // right doesnt have a l\
-eft
+  if (temp->getLeft() == nullptr) { // right doesnt have a left
     btn* temp3 = head->getRight();
     head->value = head->getRight()->getValue();
     head->setRight(head->getRight()->getRight());
@@ -279,6 +292,5 @@ eft
   temp->getLeft()->~btn();
   temp->setLeft(temp2);
 
-  head = newHead;
-  //cout << "val" << temp->getValue();
+  head = newHead; // set head as the new head
 }
