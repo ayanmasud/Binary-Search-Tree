@@ -72,35 +72,41 @@ int main() {
   cout << "'QUIT' to leave" << endl;
   
   btn* head = new btn(0); // head of the tree
-
-  // prepare the tree using file
-  ifstream file("nums.txt");
-  if (file.is_open()) {
-    string line;
-    while (getline(file, line)) {
-      stringstream ss(line);
-      string word;
-      while (ss >> word) { // string stream helps with the splitting by spaces
-	int num = stoi(word); // convert the string to int
-	btn* added = new btn(num);
-	add(head, head, added);
-      }
-    }
-    file.close();
-  } else { // files not there
-    cout << "Unable to open file";
-  }
   
   while (true) {
     char cmd[8];
     cin.getline(cmd, 8);
     
     if (strcmp(cmd, "ADD") == 0) { // add command
-      int num;
-      cout << "add num: ";
-      cin >> num;
-      btn* added = new btn(num);
-      add(head, head, added);
+      cout << "through file (f) or manually (m)? ";
+      char fm[2];
+      cin.getline(fm, 2);
+      if (strcmp(fm, "m") == 0) { // manually add numbers to the tree
+	int num;
+	cout << "add num: ";
+	cin >> num;
+	btn* added = new btn(num);
+	add(head, head, added);
+      }
+      else if (strcmp(fm, "f") == 0) { // add through file
+	// prepare the tree using file
+	ifstream file("nums.txt");
+	if (file.is_open()) {
+	  string line;
+	  while (getline(file, line)) {
+	    stringstream ss(line);
+	    string word;
+	    while (ss >> word) { // string stream helps with the splitting by spaces
+	      int num = stoi(word); // convert the string to int
+	      btn* added = new btn(num);
+	      add(head, head, added);
+	    }
+	  }
+	  file.close();
+	} else { // files not there
+	  cout << "Unable to open file";
+	}
+      }
     }
     else if (strcmp(cmd, "PRINT") == 0) { // print command
       print(head, 0);
@@ -200,20 +206,50 @@ void del(btn* &head, btn* current, int val) { // uses a method similar to the se
   if (current == nullptr) { // stop
     return;
   }
-
+  
   if (current->getLeft()->getValue() == val && current->getLeft()->getLeft() == nullptr && current->getLeft()->getRight() == nullptr) { // left is the one to delete and it has no child
-      current->getLeft()->~btn();
-      current->setLeft(nullptr);
-      return;
+    current->getLeft()->~btn();
+    current->setLeft(nullptr);
+    return;
   }
   if (current->getRight()->getValue() == val && current->getRight()->getLeft() == nullptr && current->getRight()->getRight() == nullptr) { // right is the one to delete and it has no child
-      current->getRight()->~btn();
-      current->setRight(nullptr);
+    current->getRight()->~btn();
+    current->setRight(nullptr);
+    return;
+  }
+
+  // only left child deletion with one child
+  if (current->getLeft() != nullptr && current->getLeft()->getValue() == val) {
+    btn* nodeToDelete = current->getLeft();
+    if (nodeToDelete->getLeft() == nullptr && nodeToDelete->getRight() != nullptr) { // only has one right
+      current->setLeft(nodeToDelete->getRight());
+      delete nodeToDelete;
       return;
+    }
+    if (nodeToDelete->getLeft() != nullptr && nodeToDelete->getRight() == nullptr) { // only has one left
+      current->setLeft(nodeToDelete->getLeft());
+      delete nodeToDelete;
+      return;
+    }
+  }
+
+  // only right child deletion with one child
+  if (current->getRight() != nullptr && current->getRight()->getValue() == val) {
+    btn* nodeToDelete = current->getRight();
+    if (nodeToDelete->getLeft() == nullptr && nodeToDelete->getRight() != nullptr) { // only has one right
+      current->setRight(nodeToDelete->getRight());
+      delete nodeToDelete;
+      return;
+    }
+    if (nodeToDelete->getLeft() != nullptr && nodeToDelete->getRight() == nullptr) { // only has one left
+      current->setRight(nodeToDelete->getLeft());
+      delete nodeToDelete;
+      return;
+    }
   }
   
   if (current->getValue() == val) { // found!
-    if (current->getLeft() != nullptr && current->getRight() == nullptr) { // 1 child left
+    /*if (current->getLeft() != nullptr && current->getRight() == nullptr) { // 1 child left
       btn* temp = current->getLeft();
       current->value = current->getLeft()->getValue();
       current->setLeft(current->getLeft()->getRight());
@@ -221,17 +257,17 @@ void del(btn* &head, btn* current, int val) { // uses a method similar to the se
       temp->~btn();
       return;
     }
-    else if (current->getLeft() == nullptr && current->getRight() != nullptr) { // 1 child right
+    if (current->getLeft() == nullptr && current->getRight() != nullptr) { // 1 child right
       btn* temp = current->getRight();
       current->value = current->getRight()->getValue();
       current->setRight(current->getRight()->getRight());
       current->setLeft(current->getRight()->getLeft());
       temp->~btn();
       return;
-    }
-    else if (current->getLeft() != nullptr && current->getRight() != nullptr) { // 2 children
+      }*/
+    if (current->getLeft() != nullptr && current->getRight() != nullptr) { // 2 children
       btn* temp = current->getRight();
-
+      
       if (current->getRight()->getLeft() == nullptr) { // right doesnt have a left
 	btn* temp3 = current->getRight();
 	current->value = current->getRight()->getValue();
@@ -239,7 +275,7 @@ void del(btn* &head, btn* current, int val) { // uses a method similar to the se
 	temp3->~btn();
 	return;
       }
-
+      
       // similar to the deletion of head
       while (temp->getLeft()->getLeft() != nullptr) {
 	temp = temp->getLeft();
@@ -247,13 +283,13 @@ void del(btn* &head, btn* current, int val) { // uses a method similar to the se
       
       // setup the replacer
       int newVal = temp->getLeft()->getValue();
-
+      
       
       // remove it from the tree by replacing its spot with its right
       btn* temp2 = temp->getLeft()->getRight();
       temp->getLeft()->~btn();
       temp->setLeft(temp2);
-
+      
       current->value = newVal;
       return;
     }
